@@ -24,3 +24,14 @@ def log_stats(mongo_collection):
     for method, count in method_counts.items():
         print(f"\tmethod {method}: {count}")
     print(f"{status_check_count} status check")
+
+if __name__ == "__main__":
+    # Connect to MongoDB
+    client = MongoClient('mongodb://127.0.0.1:27017')
+
+    # Select the database and collection
+    db = client.logs
+    collection = db.nginx
+
+    # Call the log_stats function to print statistics
+    log_stats(collection)
