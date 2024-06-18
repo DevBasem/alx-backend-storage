@@ -3,6 +3,11 @@
 from pymongo import MongoClient
 
 def top_students(mongo_collection):
+    """
+    returns all students sorted by average score
+    :param mongo_collection:
+    :return:
+    """
     students = list(mongo_collection.find())
     
     for student in students:
