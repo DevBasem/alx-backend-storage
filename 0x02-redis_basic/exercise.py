@@ -3,7 +3,7 @@
 exercise.py
 
 This module contains the Cache class for interacting with a Redis database,
-as well as a decorator to count method calls.
+as well as decorators to count method calls and store call histories.
 """
 
 import redis
@@ -32,6 +32,36 @@ def count_calls(method: Callable) -> Callable:
         return method(self, *args, **kwargs)
     return wrapper
 
+def call_history(method: Callable) -> Callable:
+    """
+    Decorator to store the history of inputs and outputs for a function.
+
+    :param method: The method to be decorated.
+    :return: The decorated method with call history functionality.
+    """
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        """
+        Wrapper function to store inputs and outputs in Redis and call the original method.
+
+        :param args: Positional arguments for the original method.
+        :param kwargs: Keyword arguments for the original method.
+        :return: The return value of the original method.
+        """
+        input_key = f"{method.__qualname__}:inputs"
+        output_key = f"{method.__qualname__}:outputs"
+
+        # Store the input arguments as a string
+        self._redis.rpush(input_key, str(args))
+
+        # Execute the original method and store the output
+        output = method(self, *args, **kwargs)
+        self._redis.rpush(output_key, str(output))
+
+        return output
+
+    return wrapper
+
 class Cache:
     """
     Cache class
@@ -49,6 +79,7 @@ class Cache:
         self._redis = redis.Redis(host='127.0.0.1', port=6379)
         self._redis.flushdb()
 
+    @call_history
     @count_calls
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """
