@@ -11,6 +11,7 @@ import uuid
 from typing import Union, Callable, Optional
 from functools import wraps
 
+
 def count_calls(method: Callable) -> Callable:
     """
     Decorator to count the number of calls to a method.
@@ -21,7 +22,8 @@ def count_calls(method: Callable) -> Callable:
     @wraps(method)
     def wrapper(self, *args, **kwargs):
         """
-        Wrapper function to increment the call count in Redis and call the original method.
+        Wrapper function to increment the call count in Redis and
+        call the original method.
 
         :param args: Positional arguments for the original method.
         :param kwargs: Keyword arguments for the original method.
@@ -31,6 +33,7 @@ def count_calls(method: Callable) -> Callable:
         self._redis.incr(key)
         return method(self, *args, **kwargs)
     return wrapper
+
 
 def call_history(method: Callable) -> Callable:
     """
@@ -42,7 +45,8 @@ def call_history(method: Callable) -> Callable:
     @wraps(method)
     def wrapper(self, *args, **kwargs):
         """
-        Wrapper function to store inputs and outputs in Redis and call the original method.
+        Wrapper function to store inputs and outputs in Redis
+        and call the original method.
 
         :param args: Positional arguments for the original method.
         :param kwargs: Keyword arguments for the original method.
@@ -62,6 +66,7 @@ def call_history(method: Callable) -> Callable:
 
     return wrapper
 
+
 def replay(method: Callable):
     """
     Display the history of calls of a particular function.
@@ -79,14 +84,18 @@ def replay(method: Callable):
     print(f"{method_name} was called {len(inputs)} times:")
 
     for input_val, output_val in zip(inputs, outputs):
-        print(f"{method_name}(*{input_val.decode('utf-8')}) -> {output_val.decode('utf-8')}")
+        input_str = input_val.decode('utf-8')
+        output_str = output_val.decode('utf-8')
+        print(f"{method_name}(*{input_str}) -> {output_str}")
+
 
 class Cache:
     """
     Cache class
 
-    This class provides methods to interact with a Redis database, including storing
-    data with randomly generated keys and retrieving data with type conversion.
+    This class provides methods to interact with a Redis database,
+    including storing data with randomly generated keys and
+    retrieving data with type conversion.
     """
 
     def __init__(self):
@@ -104,20 +113,26 @@ class Cache:
         """
         Store the input data in Redis using a randomly generated key.
 
-        :param data: The data to be stored, which can be of type str, bytes, int, or float.
+        :param data: The data to be stored, which can be
+        of type str, bytes, int, or float.
         :return: The randomly generated key as a string.
         """
         key = str(uuid.uuid4())
         self._redis.set(key, data)
         return key
 
-    def get(self, key: str, fn: Optional[Callable] = None) -> Optional[Union[str, bytes, int, float]]:
+    def get(
+        self,
+        key: str,
+        fn: Optional[Callable] = None
+    ) -> Optional[Union[str, bytes, int, float]]:
         """
         Retrieve data from Redis and optionally apply a conversion function.
 
         :param key: The key string to look up in Redis.
         :param fn: The optional callable to convert the retrieved data.
-        :return: The retrieved data, optionally converted by fn, or None if key does not exist.
+        :return: The retrieved data, optionally converted by fn,
+        or None if key does not exist.
         """
         data = self._redis.get(key)
         if data is None:
