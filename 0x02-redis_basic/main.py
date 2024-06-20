@@ -7,13 +7,9 @@ from exercise import Cache
 
 cache = Cache()
 
-TEST_CASES = {
-    b"foo": None,
-    123: int,
-    "bar": lambda d: d.decode("utf-8")
-}
+cache.store(b"first")
+print(cache.get(cache.store.__qualname__))  # should print b'1'
 
-for value, fn in TEST_CASES.items():
-    key = cache.store(value)
-    assert cache.get(key, fn=fn) == value
-    print(f"Stored {value} with key {key} and retrieved it successfully.")
+cache.store(b"second")
+cache.store(b"third")
+print(cache.get(cache.store.__qualname__))  # should print b'3'
