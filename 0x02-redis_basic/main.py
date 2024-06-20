@@ -3,19 +3,15 @@
 Main file
 """
 
-from exercise import Cache
+from exercise import Cache, replay
 
 cache = Cache()
 
-s1 = cache.store("first")
+s1 = cache.store("foo")
 print(s1)
-s2 = cache.store("second")
+s2 = cache.store("bar")
 print(s2)
-s3 = cache.store("third")
+s3 = cache.store(42)
 print(s3)
 
-inputs = cache._redis.lrange(f"{cache.store.__qualname__}:inputs", 0, -1)
-outputs = cache._redis.lrange(f"{cache.store.__qualname__}:outputs", 0, -1)
-
-print(f"inputs: {inputs}")
-print(f"outputs: {outputs}")
+replay(cache.store)
