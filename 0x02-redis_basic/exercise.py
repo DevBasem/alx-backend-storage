@@ -7,14 +7,14 @@ This module contains the Cache class for interacting with a Redis database.
 
 import redis
 import uuid
-from typing import Union
+from typing import Union, Callable, Optional
 
 class Cache:
     """
     Cache class
 
     This class provides methods to interact with a Redis database, including storing
-    data with randomly generated keys.
+    data with randomly generated keys and retrieving data with type conversion.
     """
 
     def __init__(self):
@@ -23,7 +23,7 @@ class Cache:
 
         Creates an instance of the Redis client and flushes the database.
         """
-        self._redis = redis.Redis()
+        self._redis = redis.Redis(host='127.0.0.1', port=6379)
         self._redis.flushdb()
 
     def store(self, data: Union[str, bytes, int, float]) -> str:
@@ -36,3 +36,36 @@ class Cache:
         key = str(uuid.uuid4())
         self._redis.set(key, data)
         return key
+
+    def get(self, key: str, fn: Optional[Callable] = None) -> Optional[Union[str, bytes, int, float]]:
+        """
+        Retrieve data from Redis and optionally apply a conversion function.
+
+        :param key: The key string to look up in Redis.
+        :param fn: The optional callable to convert the retrieved data.
+        :return: The retrieved data, optionally converted by fn, or None if key does not exist.
+        """
+        data = self._redis.get(key)
+        if data is None:
+            return None
+        if fn is not None:
+            return fn(data)
+        return data
+
+    def get_str(self, key: str) -> Optional[str]:
+        """
+        Retrieve a string value from Redis.
+
+        :param key: The key string to look up in Redis.
+        :return: The retrieved string data or None if key does not exist.
+        """
+        return self.get(key, lambda d: d.decode('utf-8'))
+
+    def get_int(self, key: str) -> Optional[int]:
+        """
+        Retrieve an integer value from Redis.
+
+        :param key: The key string to look up in Redis.
+        :return: The retrieved integer data or None if key does not exist.
+        """
+        return self.get(key, lambda d: int(d))
